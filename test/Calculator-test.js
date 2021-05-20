@@ -16,7 +16,7 @@ describe("Calculator", async function() {
                   const Calculator = await ethers.getContractFactory('Calculator');
                   const calculator = await Calculator.deploy();
                   await calculator.deployed();
-                  expect(await calculator[fn](args[0], args[1])).to.equal(expected);
+                  expect(await calculator[fn](...args)).to.equal(expected);
               };
         return wrapper;
     };

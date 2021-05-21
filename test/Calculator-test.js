@@ -10,18 +10,25 @@ describe("Calculator", async function() {
         await this.calculator.deployed();
     });
 
-    const testCase = (fn) => {
+    const testEquality = (fn) => {
         const wrapper = ({args, expected}) =>
               async function() {
                   expect(await this.calculator[fn](...args)).to.equal(expected);
               };
         return wrapper;
     };
-    
+
+    const testRevert = (fn) => {
+        const wrapper = ({args, message}) =>
+              async function() {
+                  await expect(this.calculator[fn](...args)).to.be.revertedWith(message);
+              };
+        return wrapper;
+    };
 
 
     describe("add", function() {
-        const testAdd = testCase('add');
+        const testAdd = testEquality('add');
 
         
         it("add two digits", testAdd({args: [2, 3], expected: 5}));
@@ -37,7 +44,7 @@ describe("Calculator", async function() {
 
 
     describe("sub", function() {
-        const testSub = testCase('sub');
+        const testSub = testEquality('sub');
 
 
         it("substract two digits", testSub({args: [2, 3], expected: -1}));
@@ -53,7 +60,7 @@ describe("Calculator", async function() {
 
 
     describe("mul", function() {
-        const testMul = testCase('mul');
+        const testMul = testEquality('mul');
 
 
         it("multiply two digits", testMul({args: [2, 3], expected: 6}));
@@ -70,7 +77,8 @@ describe("Calculator", async function() {
 
     
     describe("div", function() {
-        const testDiv = testCase('div');
+        const testDiv = testEquality('div');
+        const testDivRevert = testRevert('div');
 
 
         it("multiply two digits", testDiv({args: [2, 3], expected: 0}));
@@ -83,15 +91,13 @@ describe("Calculator", async function() {
 
         it("multiply two big positive numbers (int256 overflow)", testDiv({args: [340282366920938463463374607431768211455n, 3n], expected: 113427455640312821154458202477256070485n}));
 
-        it("Should revert if nb2 equals 0", async function() {
-            await expect(this.calculator.div(10, 0)).to.be.revertedWith("Calculator: cannot divide by zero");
-        });
+        it("Should revert if nb2 equals 0", testDivRevert({args: [10, 0], message: "Calculator: cannot divide by zero"}));
 
     });
 
 
     describe("mod", function() {
-        const testMod = testCase('mod');
+        const testMod = testEquality('mod');
 
 
         it("multiply two digits", testMod({args: [2, 3], expected: 2}));

@@ -1,22 +1,19 @@
 const { expect } = require("chai");
-
+// const { ethers } = require("hardhat");
 
 describe("Calculator", async function() {
     this.slow(2000);
 
-    // beforeEach(async function() {
-    //     const Calculator = await ethers.getContractFactory('Calculator');
-    //     const calculator = await Calculator.deploy();
-    //     await calculator.deployed();
-    // });
+    beforeEach(async function() {
+        this.Calculator = await ethers.getContractFactory('Calculator');
+        this.calculator = await this.Calculator.deploy();
+        await this.calculator.deployed();
+    });
 
     const testCase = (fn) => {
         const wrapper = ({args, expected}) =>
               async function() {
-                  const Calculator = await ethers.getContractFactory('Calculator');
-                  const calculator = await Calculator.deploy();
-                  await calculator.deployed();
-                  expect(await calculator[fn](...args)).to.equal(expected);
+                  expect(await this.calculator[fn](...args)).to.equal(expected);
               };
         return wrapper;
     };
@@ -85,6 +82,10 @@ describe("Calculator", async function() {
         it("multiply one positive number and a negative one", testDiv({args: [98, -63], expected: -1}));
 
         it("multiply two big positive numbers (int256 overflow)", testDiv({args: [340282366920938463463374607431768211455n, 3n], expected: 113427455640312821154458202477256070485n}));
+
+        it("Should revert if nb2 equals 0", async function() {
+            await expect(this.calculator.div(10, 0)).to.be.revertedWith("Calculator: cannot divide by zero");
+        });
 
     });
 
